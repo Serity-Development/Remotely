@@ -240,7 +240,12 @@ public class AppDb : IdentityDbContext
             // it correctly), so we need to use a converter.
             foreach (var entityType in builder.Model.GetEntityTypes())
             {
-                if (entityType.IsKeyless)
+                // Skip keyless, owned, and key-less convention-discovered types.
+                // ASP.NET Core 10 Identity exposes IdentityPasskeyData, which EF discovers by
+                // convention but drops during model finalization when passkeys aren't enabled.
+                // Calling builder.Entity() on it pins it as an explicit entity, which then fails
+                // validation ("requires a primary key"). No real table here lacks a key.
+                if (entityType.IsKeyless || entityType.IsOwned() || entityType.FindPrimaryKey() is null)
                 {
                     continue;
                 }
