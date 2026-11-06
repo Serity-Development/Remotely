@@ -43,18 +43,13 @@ public class LogsManager : ILogsManager
         }
     }
 
-    public async Task DeleteLogs()
+    public Task DeleteLogs()
     {
         var logsDir = GetLogsDirectory();
 
         var files = Directory.GetFiles(logsDir);
 
-        if (!files.Any())
-        {
-            return;
-        }
-
-        await foreach (var file in files.ToAsyncEnumerable())
+        foreach (var file in files)
         {
             try
             {
@@ -69,6 +64,8 @@ public class LogsManager : ILogsManager
                 Console.WriteLine($"Failed to delete log file: {file}.  Message: {ex.Message}");
             }
         }
+
+        return Task.CompletedTask;
     }
 
     public async IAsyncEnumerable<string> GetLogs(
